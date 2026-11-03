@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- DRAFT Luganda. Every string must be checked by the native translator against the glossary. -->
+<resources>
+    <string name="shop_now">Gula kati</string>
+    <string name="welcome_tagline">Kirabe ku vidiyo nga tonnasasula</string>
+    <string name="pick_category">Onoonya ki?</string>
+    <string name="live_now">LIVE</string>
+    <string name="top_sellers">Abatunzi abasinga</string>
+    <string name="sellers_near_you">Abatunzi okumpi naawe</string>
+    <string name="call_seller">Kuba vidiyo</string>
+    <string name="verified">Akakasiddwa</string>
+    <string name="completed_deals">Endagaano %1$d eziwedde</string>
+    <string name="call_recorded_notice">Okuyita kuno kukwatibwa okubakuuma mwembi.</string>
+    <string name="liso_protect">Liso Protect ekuuma ssente zo okutuusa lw\'okakasa nti ofunye ekintu.</string>
+    <string name="retry">Gezaako nate</string>
+    <string name="error_offline">Tetusobola kutuuka ku Liso. Kebera data oba Wi-Fi.</string>
+</resources>

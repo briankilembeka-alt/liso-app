@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Liso</string>
+    <string name="shop_now">Shop now</string>
+    <string name="welcome_tagline">See it on video before you pay</string>
+    <string name="pick_category">What are you looking for?</string>
+    <string name="live_now">LIVE</string>
+    <string name="top_sellers">Top sellers</string>
+    <string name="sellers_near_you">Sellers near you</string>
+    <string name="call_seller">Video call</string>
+    <string name="verified">Verified</string>
+    <string name="completed_deals">%1$d completed deals</string>
+    <string name="call_recorded_notice">This call is recorded to protect you both.</string>
+    <string name="liso_protect">Liso Protect holds your money until you confirm you got the item.</string>
+    <string name="retry">Try again</string>
+    <string name="error_offline">Can\'t reach Liso. Check your data or Wi-Fi.</string>
+</resources>
