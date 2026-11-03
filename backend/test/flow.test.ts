@@ -67,8 +67,14 @@ describe("buyer calls seller and they make a deal", () => {
     expect(incoming.json().calls.map((c: { id: string }) => c.id)).toEqual([callId]);
     expect((await inject("GET", `/sellers/${sellerId}/calls/incoming`, buyer)).statusCode).toBe(403);
 
+    const waiting = await inject("GET", `/calls/${callId}`, buyer);
+    expect(waiting.json()).toMatchObject({ status: "requested", role: "buyer" });
+    const stranger = await signIn(env, "0785555555");
+    expect((await inject("GET", `/calls/${callId}`, stranger)).statusCode).toBe(403);
+
     const accepted = await inject("POST", `/calls/${callId}/accept`, seller);
     expect(accepted.json().join.publish).toEqual({ width: 640, height: 360, maxBitrateKbps: 600 });
+    expect((await inject("GET", `/calls/${callId}`, buyer)).json().status).toBe("active");
     const joined = await inject("POST", `/calls/${callId}/join`, buyer);
     expect(joined.json().join.token).toContain("buyer");
     await inject("POST", `/calls/${callId}/end`, buyer);
