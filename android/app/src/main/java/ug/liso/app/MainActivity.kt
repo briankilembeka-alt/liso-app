@@ -4,18 +4,18 @@ import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import ug.liso.app.data.Api
+import ug.liso.app.data.Session
+import ug.liso.app.ui.screens.CallScreen
+import ug.liso.app.ui.screens.IdCheckScreen
+import ug.liso.app.ui.screens.SignInScreen
 import ug.liso.app.ui.screens.CategoriesScreen
 import ug.liso.app.ui.screens.HomeScreen
 import ug.liso.app.ui.screens.SellerProfileScreen
@@ -23,7 +23,8 @@ import ug.liso.app.ui.screens.WelcomeScreen
 import ug.liso.app.ui.theme.LisoTheme
 
 class MainActivity : ComponentActivity() {
-    private val api = Api()
+    private val session by lazy { Session(this) }
+    private val api by lazy { Api(session) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,10 +46,18 @@ class MainActivity : ComponentActivity() {
                         composable("seller/{id}") { e ->
                             SellerProfileScreen(api, e.arguments?.getString("id")!!) { nav.navigate("call/$it") }
                         }
-                        composable("call/{sellerId}") {
-                            // Next step of milestone 1: sign-in, ID check, then the IVS Real-Time call screen.
-                            Box(Modifier.fillMaxSize(), Alignment.Center) { Text("Video call coming next") }
+                        composable("call/{sellerId}") { e ->
+                            CallScreen(
+                                api = api,
+                                sellerId = e.arguments?.getString("sellerId")!!,
+                                signedIn = session.signedIn,
+                                onNeedsSignIn = { nav.navigate("signin") },
+                                onNeedsId = { nav.navigate("idcheck") },
+                                onDone = { nav.popBackStack() },
+                            )
                         }
+                        composable("signin") { SignInScreen(api) { nav.popBackStack() } }
+                        composable("idcheck") { IdCheckScreen(api) { nav.popBackStack() } }
                     }
                 }
             }

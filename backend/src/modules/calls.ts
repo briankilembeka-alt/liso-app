@@ -72,6 +72,15 @@ export function callRoutes(app: FastifyInstance, ctx: Ctx) {
     return { calls: r.rows };
   });
 
+  /** Either side polls this to see when the seller has answered. */
+  app.get("/calls/:id", async (req) => {
+    const userId = requireUser(req);
+    const { id } = idParam.parse(req.params);
+    const call = await loadCall(ctx, id);
+    if (call.buyer_id !== userId && call.owner_user_id !== userId) throw forbidden();
+    return { id: call.id, sellerId: call.seller_id, status: call.status, role: call.buyer_id === userId ? "buyer" : "seller" };
+  });
+
   app.post("/calls/:id/accept", async (req) => {
     const userId = requireUser(req);
     const { id } = idParam.parse(req.params);

@@ -41,6 +41,12 @@ android {
         }
     }
 
+    // Compress the video SDK's native code inside the APK: a much smaller download
+    // (pilot APKs are shared directly), at the cost of a little more space once installed.
+    packaging {
+        jniLibs.useLegacyPackaging = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
@@ -66,7 +72,7 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
-    // Video calls (Amazon IVS Real-Time). Wired in the next step of milestone 1.
-    // implementation("com.amazonaws:ivs-broadcast:1.24.0:stages@aar")
+    // Video calls: Amazon IVS Real-Time (the "stages" build of the broadcast SDK).
+    implementation("com.amazonaws:ivs-broadcast:1.48.0:stages@aar")
     testImplementation("junit:junit:4.13.2")
 }

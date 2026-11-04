@@ -10,7 +10,8 @@
 - [x] Deal write-up, buyer accept, handover code, 48-hour auto-complete
 - [x] Tamper-evident deal record
 - [x] Android: welcome, categories, home, seller profile
-- [ ] Android: sign-in, ID check and the IVS video call screen
+- [x] Android: sign-in, ID check and the buyer side of the IVS video call
+- [ ] Android: seller side (incoming call, accept, write up the deal)
 - [ ] Call recording to S3 at ~360p, and the deletion job
 - [ ] Real ID check through a KYC partner, and an SMS gateway
 - [ ] Deploy a staging server
