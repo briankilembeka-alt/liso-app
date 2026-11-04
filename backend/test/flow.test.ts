@@ -48,6 +48,8 @@ describe("buyer calls seller and they make a deal", () => {
     });
     expect(shop.statusCode).toBe(201);
     const sellerId = shop.json().id;
+    expect((await inject("GET", "/me/sellers", seller)).json().sellers.map((x: { id: string }) => x.id)).toEqual([sellerId]);
+    expect((await inject("GET", "/me/sellers", buyer)).json().sellers).toEqual([]);
     expect(shop.json().documentsDueAt).not.toBeNull(); // no URSB/TIN yet: 30-day grace
 
     // Buyer finds them under the parent category.
@@ -85,6 +87,11 @@ describe("buyer calls seller and they make a deal", () => {
     expect(deal.json()).toMatchObject({ feeUgx: "13500", sellerReceivesUgx: "436500", status: "agreed" });
     expect(deal.json().handoverCode).toBeUndefined(); // seller must not see it
     const dealId = deal.json().id;
+    const mine = (await inject("GET", "/deals", buyer)).json().deals;
+    expect(mine).toHaveLength(1);
+    expect(mine[0]).toMatchObject({ id: dealId, role: "buyer", businessName: "Kikuubo Phones" });
+    expect((await inject("GET", "/deals", seller)).json().deals[0]).toMatchObject({ id: dealId, role: "seller" });
+    expect((await inject("GET", "/deals", seller)).json().deals[0].handoverCode).toBeUndefined();
     expect((await inject("POST", `/deals/${dealId}/accept`, seller)).statusCode).toBe(403);
     const acc = await inject("POST", `/deals/${dealId}/accept`, buyer);
     const code = acc.json().handoverCode as string;

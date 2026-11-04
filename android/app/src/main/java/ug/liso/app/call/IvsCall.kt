@@ -1,6 +1,8 @@
 package ug.liso.app.call
 
 import android.content.Context
+import android.os.Build
+import androidx.annotation.RequiresApi
 import android.view.View
 import com.amazonaws.ivs.broadcast.AudioDevice
 import com.amazonaws.ivs.broadcast.AudioLocalStageStream
@@ -17,12 +19,20 @@ import com.amazonaws.ivs.broadcast.StageRenderer
 import com.amazonaws.ivs.broadcast.StageStream
 import com.amazonaws.ivs.broadcast.StageVideoConfiguration
 import ug.liso.app.data.PublishLimits
+import java.util.EnumSet
 
 /**
  * One 1:1 video call on Amazon IVS Real-Time.
  * Publishes the front camera and microphone within the server's limits (360p by default)
  * and reports the other person's video view through [onRemoteVideo].
+ * The IVS Real-Time SDK needs Android 9 (API 28); check [VideoCalls.supported] first.
  */
+object VideoCalls {
+    /** Android 8 phones can browse and shop, but video calls need Android 9 or newer. */
+    val supported: Boolean get() = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+}
+
+@RequiresApi(Build.VERSION_CODES.P)
 class IvsCall(
     context: Context,
     token: String,
@@ -46,10 +56,11 @@ class IvsCall(
     private val audioStream = mic?.let { AudioLocalStageStream(it) }
     private val publishing: List<LocalStageStream> = listOfNotNull(videoStream, audioStream)
 
-    private val strategy = object : Stage.Strategy {
+    private val strategy = object : Stage.StrategyV2 {
         override fun stageStreamsToPublishForParticipant(stage: Stage, info: ParticipantInfo) = publishing
         override fun shouldPublishFromParticipant(stage: Stage, info: ParticipantInfo) = true
-        override fun shouldSubscribeToParticipant(stage: Stage, info: ParticipantInfo) = Stage.SubscribeType.AUDIO_VIDEO
+        override fun shouldSubscribeToParticipantTypes(stage: Stage, info: ParticipantInfo): Set<Stage.SubscribeMediaType> =
+            EnumSet.of(Stage.SubscribeMediaType.AUDIO, Stage.SubscribeMediaType.VIDEO)
     }
 
     private val renderer = object : StageRenderer {

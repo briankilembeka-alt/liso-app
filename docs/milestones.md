@@ -11,7 +11,9 @@
 - [x] Tamper-evident deal record
 - [x] Android: welcome, categories, home, seller profile
 - [x] Android: sign-in, ID check and the buyer side of the IVS video call
-- [ ] Android: seller side (incoming call, accept, write up the deal)
+- [x] Android: seller side (open a shop, incoming calls, accept, write up the deal)
+- [x] Android: Deals tab (accept, handover code, confirm receipt)
+- [ ] Push notification so the seller's phone rings when Liso is closed
 - [ ] Call recording to S3 at ~360p, and the deletion job
 - [ ] Real ID check through a KYC partner, and an SMS gateway
 - [ ] Deploy a staging server

@@ -96,6 +96,14 @@ export function sellerRoutes(app: FastifyInstance, ctx: Ctx) {
     }
   });
 
+  /** Shops the signed-in user owns (usually one). */
+  app.get("/me/sellers", async (req) => {
+    const userId = requireUser(req);
+    const r = await ctx.db.query<SellerRow>(`${SELLER_SELECT} WHERE s.owner_user_id = $1 GROUP BY s.id ORDER BY s.created_at`, [userId]);
+    const now = ctx.now();
+    return { sellers: r.rows.map((s) => present(s, now)) };
+  });
+
   /** Sellers for a category, ranked on merit. */
   app.get("/sellers", async (req) => {
     const q = z
