@@ -10,7 +10,8 @@ The pilot is about 30 traders in Kampala, on entry-level Android phones (Tecno S
 | --- | --- |
 | `backend/` | The API: TypeScript on Node 22, Fastify, Postgres. One service, split into modules. |
 | `android/` | The Android app: Kotlin and Jetpack Compose, kept under 20 MB per phone. |
-| `docs/` | Architecture and the milestone plan. |
+| `docs/` | Architecture, the milestone plan, and the [test server guide](docs/test-server.md). |
+| `deploy/` | The test server's first-boot script. |
 
 ## Run the backend
 

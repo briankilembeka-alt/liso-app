@@ -8,4 +8,6 @@ export interface Ctx {
   sms: SmsProvider;
   video: VideoProvider;
   now: () => Date;
+  /** Test servers only: use this sign-in code instead of a random one. */
+  fixedOtp?: string;
 }

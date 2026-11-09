@@ -18,7 +18,10 @@ android {
         versionName = "0.1.0"
         // Only English and Luganda resources ship in the pilot (Swahili later).
         resourceConfigurations += listOf("en", "lg")
-        buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8080\"")
+        // Test builds pass -PlisoApiUrl=https://... (see .github/workflows/test-apk.yml); the default is
+        // the developer's computer as seen from the Android emulator.
+        val apiUrl = (project.findProperty("lisoApiUrl") as String?)?.trimEnd('/') ?: "http://10.0.2.2:8080"
+        buildConfigField("String", "API_BASE_URL", "\"$apiUrl\"")
     }
 
     buildTypes {
