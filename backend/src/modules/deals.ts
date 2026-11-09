@@ -107,6 +107,23 @@ export function dealRoutes(app: FastifyInstance, ctx: Ctx) {
     return present(deal, userId);
   });
 
+  /** The signed-in user's deals, as buyer or seller, newest first. */
+  app.get("/deals", async (req) => {
+    const userId = requireUser(req);
+    const r = await ctx.db.query<DealRow & { business_name: string }>(
+      `SELECT d.*, s.owner_user_id, s.business_name FROM deals d JOIN sellers s ON s.id = d.seller_id
+        WHERE d.buyer_id = $1 OR s.owner_user_id = $1 ORDER BY d.created_at DESC LIMIT 50`,
+      [userId],
+    );
+    return {
+      deals: r.rows.map((d) => ({
+        ...present(d, userId),
+        role: d.buyer_id === userId ? "buyer" : "seller",
+        businessName: d.business_name,
+      })),
+    };
+  });
+
   app.get("/deals/:id", async (req) => {
     const userId = requireUser(req);
     const { id } = idParam.parse(req.params);

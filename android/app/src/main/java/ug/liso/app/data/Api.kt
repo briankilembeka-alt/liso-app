@@ -5,6 +5,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -40,6 +42,30 @@ data class Seller(
 @Serializable data class JoinToken(val token: String, val expiresAt: String, val publish: PublishLimits)
 @Serializable data class JoinResult(val join: JoinToken)
 
+@Serializable data class IncomingCall(val id: String, val requestedAt: String, val buyerName: String? = null)
+@Serializable data class AcceptResult(val status: String, val join: JoinToken)
+@Serializable data class SellerCreated(val id: String, val documentsDueAt: String? = null)
+
+@Serializable
+data class Deal(
+    val id: String,
+    val callId: String? = null,
+    val item: String,
+    val priceUgx: String,
+    val feeUgx: String,
+    val sellerReceivesUgx: String,
+    val delivery: String,
+    val status: String,
+    val releaseAfter: String? = null,
+    val handoverCode: String? = null,
+    val createdAt: String,
+    val role: String? = null,
+    val businessName: String? = null,
+)
+
+@Serializable private data class DealsResponse(val deals: List<Deal>)
+@Serializable private data class IncomingResponse(val calls: List<IncomingCall>)
+
 @Serializable private data class CategoriesResponse(val categories: List<Category>)
 @Serializable private data class SellersResponse(val sellers: List<Seller>)
 
@@ -58,10 +84,13 @@ class Api(
     private val json = Json { ignoreUnknownKeys = true }
     private val jsonType = "application/json".toMediaType()
 
-    private suspend fun send(path: String, body: Map<String, String>? = null): String = withContext(Dispatchers.IO) {
+    private suspend fun send(path: String, body: Map<String, String>): String =
+        send(path, JsonObject(body.mapValues { JsonPrimitive(it.value) }))
+
+    private suspend fun send(path: String, body: JsonElement? = null): String = withContext(Dispatchers.IO) {
         val req = Request.Builder().url(baseUrl + path)
         session?.token?.let { req.header("Authorization", "Bearer $it") }
-        if (body != null) req.post(JsonObject(body.mapValues { JsonPrimitive(it.value) }).toString().toRequestBody(jsonType))
+        if (body != null) req.post(body.toString().toRequestBody(jsonType))
         http.newCall(req.build()).execute().use { res ->
             val text = res.body?.string().orEmpty()
             if (!res.isSuccessful) {
@@ -104,4 +133,57 @@ class Api(
     suspend fun joinCall(id: String): JoinToken = json.decodeFromString<JoinResult>(send("/calls/$id/join", emptyMap())).join
 
     suspend fun endCall(id: String) { send("/calls/$id/end", emptyMap()) }
+
+    // Seller side
+
+    suspend fun mySellers(): List<Seller> = json.decodeFromString<SellersResponse>(send("/me/sellers")).sellers
+
+    suspend fun openShop(name: String, kind: String, district: String, categoryId: String): SellerCreated =
+        json.decodeFromString(
+            send(
+                "/sellers",
+                JsonObject(
+                    mapOf(
+                        "businessName" to JsonPrimitive(name),
+                        "kind" to JsonPrimitive(kind),
+                        "district" to JsonPrimitive(district),
+                        "categories" to JsonArray(listOf(JsonPrimitive(categoryId))),
+                    ),
+                ),
+            ),
+        )
+
+    suspend fun incomingCalls(sellerId: String): List<IncomingCall> =
+        json.decodeFromString<IncomingResponse>(send("/sellers/$sellerId/calls/incoming")).calls
+
+    suspend fun acceptCall(id: String): JoinToken = json.decodeFromString<AcceptResult>(send("/calls/$id/accept", emptyMap())).join
+
+    suspend fun declineCall(id: String) { send("/calls/$id/decline", emptyMap()) }
+
+    // Deals
+
+    suspend fun deals(): List<Deal> = json.decodeFromString<DealsResponse>(send("/deals")).deals
+
+    suspend fun deal(id: String): Deal = json.decodeFromString(send("/deals/$id"))
+
+    suspend fun writeUpDeal(callId: String, item: String, priceUgx: Long, delivery: String): Deal =
+        json.decodeFromString(
+            send(
+                "/deals",
+                JsonObject(
+                    mapOf(
+                        "callId" to JsonPrimitive(callId),
+                        "item" to JsonPrimitive(item),
+                        "priceUgx" to JsonPrimitive(priceUgx),
+                        "delivery" to JsonPrimitive(delivery),
+                    ),
+                ),
+            ),
+        )
+
+    suspend fun acceptDeal(id: String): Deal = json.decodeFromString(send("/deals/$id/accept", emptyMap()))
+    suspend fun cancelDeal(id: String): Deal = json.decodeFromString(send("/deals/$id/cancel", emptyMap()))
+    suspend fun markDelivered(id: String, handoverCode: String): Deal =
+        json.decodeFromString(send("/deals/$id/delivered", mapOf("handoverCode" to handoverCode)))
+    suspend fun confirmReceived(id: String): Deal = json.decodeFromString(send("/deals/$id/confirm", emptyMap()))
 }
