@@ -16,9 +16,11 @@ const ctx: Ctx = {
   sms: new ConsoleSms(),
   video: config.VIDEO_PROVIDER === "ivs" ? new IvsVideo(config.AWS_REGION) : new FakeVideo(),
   now: () => new Date(),
+  fixedOtp: config.TEST_OTP_CODE,
 };
 
 const app = buildApp(ctx, { logger: true });
+if (config.TEST_OTP_CODE) app.log.warn("TEST_OTP_CODE is set: every sign-in code is fixed. Test servers only.");
 setInterval(() => {
   autoCompleteDue(ctx).catch((err) => app.log.error(err, "auto-complete failed"));
 }, 5 * 60_000).unref();

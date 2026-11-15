@@ -1,0 +1,37 @@
+name: Test APK
+
+# Builds an installable app that talks to a given server. Run it from the Actions tab:
+# "Test APK" > "Run workflow", paste the test server address, then download the APK from the run.
+on:
+  workflow_dispatch:
+    inputs:
+      api_url:
+        description: "Test server address, e.g. https://52-18-1-2.sslip.io"
+        required: true
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: android
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Check the address
+        env:
+          API_URL: ${{ inputs.api_url }}
+        run: |
+          case "$API_URL" in https://*) ;; *) echo "::error::The address must start with https://"; exit 1;; esac
+      # Debug builds are signed with a test key, so they install on any phone that allows unknown sources.
+      - run: ./gradlew --no-daemon assembleDebug -PlisoApiUrl="$API_URL"
+        env:
+          API_URL: ${{ inputs.api_url }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: liso-test-apks
+          path: android/app/build/outputs/apk/debug/*.apk

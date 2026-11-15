@@ -50,7 +50,7 @@ export function authRoutes(app: FastifyInstance, ctx: Ctx) {
     if (Number(recent.rows[0]?.n) >= OTP_PER_HOUR) {
       throw new AppError(429, "TOO_MANY_CODES", "too many codes requested, try again later");
     }
-    const code = digits(6);
+    const code = ctx.fixedOtp ?? digits(6);
     await ctx.db.query(
       "INSERT INTO otp_codes (phone, code_hash, expires_at, created_at) VALUES ($1, $2, $3, $4)",
       [phone, sha256(`${phone}:${code}`), new Date(now.getTime() + OTP_MINUTES * 60_000), now],
